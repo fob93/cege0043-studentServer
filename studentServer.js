@@ -11,12 +11,11 @@ var http = require('http');
 var httpServer = http.createServer(app); // create server with the app
 httpServer.listen(4480);
 
-// serving content
-app.get('/test.html', function(req, res){
-	// server-side code
-	console.log('test.html requested');
-	// __dirname gives the path to the studentServer.js file
-	res.sendFile(__dirname + '/test.html');
+app.get('/:fileName', function (req, res) { 
+// run some server-side code
+var fileName = req.params.fileName; console.log(fileName + ' requested');
+// note that __dirname gives the path to the studentServer.js file 
+res.sendFile(__dirname + '/'+ fileName);
 });
 
 app.get('/',function (req,res) {

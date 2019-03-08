@@ -17,6 +17,12 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
+app.use(function(req, res, next){
+		res.header("Access-Control-Allow-Origin","*");
+		res.header("Access-Control-Allow-Headers","X-Requested-With");
+		next();
+	});
+
 
 // import required database connectivity and set up database connection
 var fs = require('fs');
@@ -55,12 +61,55 @@ var configtext = ""+fs.readFileSync("/home/studentuser/certs/postGISConnection.j
 			});
 		});
 	});
+
+// POST request upload data to studentServer.js
+	app.post('/reflectData', function(req, res){
+		// Using POST hence uploading data
+		// parameters form part of BODY request c.f. RESTful API
+		console.dir(req.body);
+	
+		// Echo request back to client
+		res.send(req.body);
+	});
 	
 
-
-	app.get('/',function (req,res) {
-		res.send("hello world from the HTTP server"); 
+app.post('/uploadData', function(req, res){
+		// Using POST hence uploading data
+		// parameters form part of BODY request c.f. RESTful API
+		console.dir(req.body);
+	
+		pool.connect(function(err, client, done){
+			// send error to client if unable to get connection
+			if (err) {
+				console.log("not able to get connection " + err);
+				res.status(400).send(err);
+			}
+			// create variables for inserting record
+			var name = req.body.name;
+			var surname = req.body.surname;
+			var module = req.body.module;
+			var portnum = req.body.port_id;
+			var querystring = "INSERT into formdata (name, surname, module, port_id) values ($1, $2, $3, $4) ";
+			console.log(querystring);
+			// query string
+			client.query(querystring, [name, surname, module, portnum], function(err, result){
+				done();
+				// if unable to query client, raise error
+				if (err){
+					console.log(err)
+					res.status(400).send(err);
+				}
+				res.status(200).send("row inserted"); // insert record in formdata
+			});
+		});
 	});
+
+
+app.get('/', function(req, res){
+	// server-side code
+	console.log("The server has received a request.");
+	res.send("hello world from the HTTP server");
+});
 
 // adding functionality to log requests
 app.use(function(req, res, next){
@@ -70,11 +119,7 @@ app.use(function(req, res, next){
 	next();
 });
 
-app.use(function(req, res, next){
-	res.header("Access-Control-Allow-Origin","*");
-	res.header("Access-Control-Allow-Headers","X-Requested-With");
-	next();
-});
+
 
 // serve static files - e.g. html, css
 // this should always be the last line in the server file 

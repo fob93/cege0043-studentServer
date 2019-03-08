@@ -11,13 +11,6 @@ var http = require('http');
 var httpServer = http.createServer(app); // create server with the app
 httpServer.listen(4480);
 
-app.get('/:fileName', function (req, res) { 
-// run some server-side code
-var fileName = req.params.fileName; console.log(fileName + ' requested');
-// note that __dirname gives the path to the studentServer.js file 
-res.sendFile(__dirname + '/'+ fileName);
-});
-
 app.get('/',function (req,res) {
 	res.send("hello world from the HTTP server"); 
 });
@@ -29,3 +22,7 @@ app.use(function(req, res, next){
 	console.log("The file " + filename + " was requested.");
 	next();
 });
+
+// serve static files - e.g. html, css
+// this should always be the last line in the server file 
+app.use(express.static(__dirname));
